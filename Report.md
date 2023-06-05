@@ -122,6 +122,31 @@ This function removes an edge from the network topology based on a vector of str
 <img src="remove_topology.png">
 <br />
 
+# Input
+
+    topology 13-9-7
+    topology 13-6-4
+    topology 12-10-12
+    topology 12-9-5
+    topology 12-7-8
+    topology 12-3-8
+    topology 11-8-16
+    topology 11-6-25
+    topology 10-5-3
+    topology 10-4-11
+    topology 8-6-17
+    topology 7-3-1
+    topology 7-2-13
+    topology 6-4-19
+    topology 6-2-2
+    topology 5-1-6
+    show
+    lsrp
+    dvrp
+    remove 10-4
+    lsrp
+    dvrp
+
 # Output
 
     u|v	|	1	2	3	4	5	6	7	8	9	10	11	12	13

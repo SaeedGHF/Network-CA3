@@ -3,6 +3,18 @@
 #include <sstream>
 #include <map>
 
+#define MAX_N 100
+#define SPACE ' '
+#define TOPOLOGY_COMMAND "topology"
+#define TOPOLOGY_DELIMITER '-'
+#define SHOW_COMMAND "show"
+#define LSRP_COMMAND "lsrp"
+#define DVRP_COMMAND "dvrp"
+#define MODIFY_COMMAND "modify"
+#define REMOVE_COMMAND "remove"
+
+using namespace std;
+
 const int INF = 1e9;
 
 class NetworkTopology {
@@ -202,9 +214,44 @@ public:
 
 vector<string> split_string(const string &str, char delimiter);
 
+void set_topology(NetworkTopology *net, const vector<string> &request);
+
+void modify_topology(NetworkTopology *net, const vector<string> &request);
+
+void remove_topology(NetworkTopology *net, const vector<string> &request);
+
+void lsrp(NetworkTopology *net, const vector<string> &request);
+
+void dvrp(NetworkTopology *net, const vector<string> &request);
+
 int main() {
-    return 0;
+    NetworkTopology net = *new NetworkTopology();
+    // handle commands
+    string command;
+    while (getline(cin, command)) {
+        if (command == "exit")
+            break;
+        auto parsed_command = split_string(command, SPACE);
+        string cmd = parsed_command[0];
+        parsed_command.erase(parsed_command.begin());
+        if (cmd == TOPOLOGY_COMMAND) {
+            set_topology(&net, parsed_command);
+        } else if (cmd == SHOW_COMMAND) {
+            net.printAdjacencyMatrix();
+        } else if (cmd == LSRP_COMMAND) {
+            lsrp(&net, parsed_command);
+        } else if (cmd == DVRP_COMMAND) {
+            dvrp(&net, parsed_command);
+        } else if (cmd == MODIFY_COMMAND) {
+            modify_topology(&net, parsed_command);
+        } else if (cmd == REMOVE_COMMAND) {
+            remove_topology(&net, parsed_command);
+        } else {
+            cout << "invalid command" << endl;
+        }
+    }
 }
+
 
 vector<string> split_string(const string &str, char delimiter) {
     vector<string> result;
@@ -214,4 +261,69 @@ vector<string> split_string(const string &str, char delimiter) {
         result.push_back(token);
     }
     return result;
+}
+
+
+void set_topology(NetworkTopology *net, const vector<string> &request) {
+    auto n = request.size();
+    for (int i = 0; i < n; i++) {
+        auto topology_str = split_string(request[i], TOPOLOGY_DELIMITER);
+        auto source = stoi(topology_str[0]);
+        auto destination = stoi(topology_str[1]);
+        auto cost = stoi(topology_str[2]);
+        net->addEdge(source, destination, cost);
+    }
+}
+
+void lsrp(NetworkTopology *net, const vector<string> &request) {
+    int src_node = -1;
+    if (!request.empty()) {
+        src_node = stoi(request[0]);
+    }
+    if (src_node != -1) {
+        net->dijkstra(src_node);
+        return;
+    }
+    for (int i = 1; i < net->getCount() + 1; ++i) {
+        cout << "################# LSRP - source: " << i << " #################" << endl;
+        net->dijkstra(i);
+    }
+}
+
+void dvrp(NetworkTopology *net, const vector<string> &request) {
+    int src_node = -1;
+    if (!request.empty()) {
+        src_node = stoi(request[0]);
+    }
+    if (src_node != -1) {
+        net->bellman_ford(src_node);
+        return;
+    }
+    for (int i = 1; i < net->getCount() + 1; ++i) {
+        cout << "########################## DVRP - source: " << i << " ##########################" << endl;
+        net->bellman_ford(i);
+    }
+}
+
+void modify_topology(NetworkTopology *net, const vector<string> &request) {
+    if (request.empty() || request.size() > 1) {
+        cout << "Usage: modify src-dest-cost" << endl;
+        return;
+    }
+    auto topology_str = split_string(request[0], TOPOLOGY_DELIMITER);
+    auto source = stoi(topology_str[0]);
+    auto dest = stoi(topology_str[1]);
+    auto cost = stoi(topology_str[2]);
+    net->modifyEdge(source, dest, cost);
+}
+
+void remove_topology(NetworkTopology *net, const vector<string> &request) {
+    if (request.empty() || request.size() > 1) {
+        cout << "Usage: remove src-dest" << endl;
+        return;
+    }
+    auto topology_str = split_string(request[0], TOPOLOGY_DELIMITER);
+    auto source = stoi(topology_str[0]);
+    auto dest = stoi(topology_str[1]);
+    net->removeEdge(source, dest);
 }
